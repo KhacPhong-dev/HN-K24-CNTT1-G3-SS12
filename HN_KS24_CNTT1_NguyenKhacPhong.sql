@@ -64,89 +64,63 @@ INSERT INTO Enrollment VALUES
 ('S00007','C00004',7.0),
 ('S00008','C00001',5.5),
 ('S00008','C00002',6.5);
+
 -- cau 1
-CREATE VIEW View_StudentBasic AS
-SELECT s.StudentID, s.FullName, d.DeptName
-FROM Student s
-JOIN Department d ON s.DeptID = d.DeptID;
+create view View_StudentBasic as
+select s.StudentID, s.FullName, d.DeptName
+from Student s
+join Department d on s.DeptID = d.DeptID;
 
-SELECT * FROM View_StudentBasic;
+select * from View_StudentBasic;
+
 -- cau 2
-CREATE INDEX idx_student_fullname ON Student(FullName);
--- cau 3
-DELIMITER $$
-CREATE PROCEDURE GetStudentsIT()
-BEGIN
-    SELECT s.StudentID, s.FullName, d.DeptName
-    FROM Student s
-    JOIN Department d ON s.DeptID = d.DeptID
-    WHERE d.DeptName = 'Information Technology';
-END$$
-DELIMITER ;
+create index idx_student_fullname on Student(FullName);
 
-CALL GetStudentsIT();
+-- cau 3
+delimiter $$
+create procedure GetStudentsIT()
+begin
+    select s.StudentID, s.FullName, d.DeptName
+    from Student s
+    join Department d on s.DeptID = d.DeptID
+    where d.DeptName = 'Information Technology';
+end$$
+delimiter ;
+
+call GetStudentsIT();
 
 -- cau 4
-CREATE VIEW View_StudentCountByDept AS
-SELECT d.DeptName, COUNT(s.StudentID) AS TotalStudents
-FROM Department d
-LEFT JOIN Student s ON d.DeptID = s.DeptID
-GROUP BY d.DeptName;
+create view View_StudentCountByDept as
+select d.DeptName, count(s.StudentID) as TotalStudents
+from Department d
+left join Student s on d.DeptID = s.DeptID
+group by d.DeptName;
 
-SELECT *
-FROM View_StudentCountByDept
-ORDER BY TotalStudents DESC
-LIMIT 1;
+-- b
+select *
+from View_StudentCountByDept
+order by TotalStudents desc
+limit 1;
+
 -- cau 5
-DELIMITER $$
-CREATE PROCEDURE GetTopScoreStudent(IN p_CourseID CHAR(6))
-BEGIN
-    SELECT s.StudentID, s.FullName, e.Score, c.CourseName
-    FROM Enrollment e
-    JOIN Student s ON e.StudentID = s.StudentID
-    JOIN Course c ON e.CourseID = c.CourseID
-    WHERE e.CourseID = p_CourseID
-      AND e.Score = (
-          SELECT MAX(Score)
-          FROM Enrollment
-          WHERE CourseID = p_CourseID
+delimiter $$
+create procedure GetTopScoreStudent(in p_CourseID char(6))
+begin
+    select s.StudentID, s.FullName, e.Score, c.CourseName
+    from Enrollment e
+    join Student s on e.StudentID = s.StudentID
+    join Course c on e.CourseID = c.CourseID
+    where e.CourseID = p_CourseID
+      and e.Score = (
+          select max(Score)
+          from Enrollment
+          where CourseID = p_CourseID
       );
-END$$
-DELIMITER ;
+end$$
+delimiter ;
 
-CALL GetTopScoreStudent('C00001');
+call GetTopScoreStudent('C00001');
 
-
--- cau 6
-CREATE VIEW View_IT_Enrollment_DB AS
-SELECT e.StudentID, e.CourseID, e.Score
-FROM Enrollment e
-JOIN Student s ON e.StudentID = s.StudentID
-JOIN Department d ON s.DeptID = d.DeptID
-WHERE d.DeptName = 'Information Technology'
-  AND e.CourseID = 'C00001'
-WITH CHECK OPTION;
-
-DELIMITER $$
-CREATE PROCEDURE UpdateScore_IT_DB(
-    IN p_StudentID CHAR(6),
-    INOUT p_NewScore FLOAT
-)
-BEGIN
-    IF p_NewScore > 10 THEN
-        SET p_NewScore = 10;
-    END IF;
-
-    UPDATE View_IT_Enrollment_DB
-    SET Score = p_NewScore
-    WHERE StudentID = p_StudentID;
-END$$
-DELIMITER ;
-
-SET @newScore = 12;
-CALL UpdateScore_IT_DB('S00001', @newScore);
-SELECT @newScore;
-SELECT * FROM View_IT_Enrollment_DB;
 
 
 -- drop
