@@ -64,16 +64,16 @@ INSERT INTO Enrollment VALUES
 ('S00007','C00004',7.0),
 ('S00008','C00001',5.5),
 ('S00008','C00002',6.5);
-
+-- cau 1
 CREATE VIEW View_StudentBasic AS
 SELECT s.StudentID, s.FullName, d.DeptName
 FROM Student s
 JOIN Department d ON s.DeptID = d.DeptID;
 
 SELECT * FROM View_StudentBasic;
-
+-- cau 2
 CREATE INDEX idx_student_fullname ON Student(FullName);
-
+-- cau 3
 DELIMITER $$
 CREATE PROCEDURE GetStudentsIT()
 BEGIN
@@ -86,7 +86,7 @@ DELIMITER ;
 
 CALL GetStudentsIT();
 
-
+-- cau 4
 CREATE VIEW View_StudentCountByDept AS
 SELECT d.DeptName, COUNT(s.StudentID) AS TotalStudents
 FROM Department d
@@ -97,7 +97,7 @@ SELECT *
 FROM View_StudentCountByDept
 ORDER BY TotalStudents DESC
 LIMIT 1;
-
+-- cau 5
 DELIMITER $$
 CREATE PROCEDURE GetTopScoreStudent(IN p_CourseID CHAR(6))
 BEGIN
@@ -116,6 +116,8 @@ DELIMITER ;
 
 CALL GetTopScoreStudent('C00001');
 
+
+-- cau 6
 CREATE VIEW View_IT_Enrollment_DB AS
 SELECT e.StudentID, e.CourseID, e.Score
 FROM Enrollment e
